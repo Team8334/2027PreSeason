@@ -47,10 +47,10 @@ public class DriveConstants {
   public static final int frontRightTurnCanId = 6;
   public static final int backRightTurnCanId = 8;
 
-  public static final int frontLeftTurnCancoderId = 2;
-  public static final int backLeftTurnCancoderId = 4;
-  public static final int frontRightTurnCancoderId = 6;
-  public static final int backRightTurnCancoderId = 8;
+  public static final int frontLeftTurnCancoderId = 10;
+  public static final int backLeftTurnCancoderId = 11;
+  public static final int frontRightTurnCancoderId = 12;
+  public static final int backRightTurnCancoderId = 13;
 
   // Drive motor configuration
   public static final int driveMotorCurrentLimit = 50;
@@ -87,7 +87,11 @@ public class DriveConstants {
   // Turn encoder configuration
   public static final boolean turnEncoderInverted = true;
   public static final double turnEncoderPositionFactor = 2 * Math.PI; // Rotations -> Radians
-  public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
+  public static final double turnEncoderVelocityFactor = 2 * Math.PI; // Rot/Sec -> Rad/Sec
+
+  // Turn motor encoder configuration (SPARK MAX primary encoder is on the motor shaft)
+  public static final double turnMotorPositionFactor = (2 * Math.PI) / turnMotorReduction;
+  public static final double turnMotorVelocityFactor = (2 * Math.PI) / 60.0 / turnMotorReduction;
 
   // Turn PID configuration
   public static final double turnKp = 2.0;

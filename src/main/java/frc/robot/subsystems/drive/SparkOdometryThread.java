@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -27,6 +28,7 @@ public class SparkOdometryThread {
   private final List<SparkBase> sparks = new ArrayList<>();
   private final List<DoubleSupplier> sparkSignals = new ArrayList<>();
   private final List<DoubleSupplier> genericSignals = new ArrayList<>();
+  private final List<BooleanSupplier> genericValidators = new ArrayList<>();
   private final List<Queue<Double>> sparkQueues = new ArrayList<>();
   private final List<Queue<Double>> genericQueues = new ArrayList<>();
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
@@ -67,10 +69,16 @@ public class SparkOdometryThread {
 
   /** Registers a generic signal to be read from the thread. */
   public Queue<Double> registerSignal(DoubleSupplier signal) {
+    return registerSignal(signal, () -> true);
+  }
+
+  /** Registers a generic signal with a health check that invalidates the whole sample. */
+  public Queue<Double> registerSignal(DoubleSupplier signal, BooleanSupplier valid) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.odometryLock.lock();
     try {
       genericSignals.add(signal);
+      genericValidators.add(valid);
       genericQueues.add(queue);
     } finally {
       Drive.odometryLock.unlock();
@@ -107,13 +115,22 @@ public class SparkOdometryThread {
         }
       }
 
+      // Read generic values, mark invalid in case of error
+      double[] genericValues = new double[genericSignals.size()];
+      for (int i = 0; i < genericSignals.size(); i++) {
+        genericValues[i] = genericSignals.get(i).getAsDouble();
+        if (!genericValidators.get(i).getAsBoolean()) {
+          isValid = false;
+        }
+      }
+
       // If valid, add values to queues
       if (isValid) {
         for (int i = 0; i < sparkSignals.size(); i++) {
           sparkQueues.get(i).offer(sparkValues[i]);
         }
         for (int i = 0; i < genericSignals.size(); i++) {
-          genericQueues.get(i).offer(genericSignals.get(i).getAsDouble());
+          genericQueues.get(i).offer(genericValues[i]);
         }
         for (int i = 0; i < timestampQueues.size(); i++) {
           timestampQueues.get(i).offer(timestamp);
