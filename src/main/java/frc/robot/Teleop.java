@@ -1,9 +1,13 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Joystick;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.Joystick;
 import frc.robot.Data.Constants;
 import frc.robot.Data.PortMap;
 import frc.robot.Devices.Controller;
@@ -184,8 +188,8 @@ public class Teleop {
       intakeMechanism.setState("Disabled");
       shooter.stop();
     }
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    Integer invert = ally.get() == Alliance.Red ? 1 : -1;
+    Optional<Alliance> ally = MatchState.getAlliance();
+    Integer invert = ally.get() == Alliance.RED ? 1 : -1;
     // --- Driving ---
     // Left JS: Y is forward/backward, X is strafe left/right
     if (Math.abs(driverLeftY) >= 0.1) {
