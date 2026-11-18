@@ -5,9 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.drive;
-
-import static frc.robot.subsystems.drive.DriveConstants.*;
+package frc.robot.Subsystems.drive;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -18,6 +16,9 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.util.Units;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
+
+import static frc.robot.Subsystems.drive.DriveConstants.*;
+
 import java.util.Queue;
 
 /** IO implementation for Pigeon 2. */

@@ -5,10 +5,10 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.drive;
+package frc.robot.Subsystems.drive;
 
+import static frc.robot.Subsystems.drive.DriveConstants.*;
 import static org.wpilib.units.Units.*;
-import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;

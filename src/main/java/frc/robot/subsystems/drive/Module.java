@@ -5,15 +5,16 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.drive;
-
-import static frc.robot.subsystems.drive.DriveConstants.*;
+package frc.robot.Subsystems.drive;
 
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.SwerveModulePosition;
 import org.wpilib.math.kinematics.SwerveModuleState;
 import org.wpilib.util.Alert;
 import org.wpilib.util.Alert.Level;
+
+import static frc.robot.Subsystems.drive.DriveConstants.*;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
