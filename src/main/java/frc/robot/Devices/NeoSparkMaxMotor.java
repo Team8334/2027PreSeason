@@ -12,8 +12,8 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.math.filter.Debouncer.DebounceType;
+import org.wpilib.wpilibj.smartdashboard.SmartDashboard;
 
 /*
  * Class: NEOSparkMaxMotor

@@ -1,10 +1,7 @@
 package frc.robot.Devices;
-
+import org.wpilib.driverstation.XboxController;
 import java.util.HashMap;
-import edu.wpi.first.wpilibj.XboxController;
-
-/*
- * Class: Controller
+ /* Class: Controller
  * Description: Makes the object of controller to be used elsewhere.
  *              Also has debounce code for the buttons.
  * Author: Trevor
@@ -17,7 +14,6 @@ public class Controller extends XboxController{
     public Controller(int port) {
         super(port);
     }
-    
     public boolean getDebouncedButton(int button) {
         if (!debounceButtons.containsKey(button)) {
             debounceButtons.put(button, false);

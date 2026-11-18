@@ -7,11 +7,11 @@ import frc.robot.Data.Constants;
 import frc.robot.Data.PortMap;
 import frc.robot.Devices.ModifiedEncoder;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.math.MathUtil;
+import org.wpilib.math.controller.ArmFeedforward;
+import org.wpilib.math.controller.ProfiledPIDController;
+import org.wpilib.math.trajectory.TrapezoidProfile;
+import org.wpilib.wpilibj.smartdashboard.SmartDashboard;
 
 /*
  * Class: Intake Mechanism

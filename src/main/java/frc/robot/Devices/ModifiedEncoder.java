@@ -1,8 +1,8 @@
 package frc.robot.Devices;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Encoder;
+import org.wpilib.wpilibj.DigitalInput;
+import org.wpilib.wpilibj.DutyCycleEncoder;
+import org.wpilib.wpilibj.Encoder;
 
 /*
  * Class: Modified Encoder
