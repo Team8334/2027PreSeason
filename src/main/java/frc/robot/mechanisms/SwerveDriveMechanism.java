@@ -79,7 +79,7 @@ public class SwerveDriveMechanism implements Mechanism
    */
   public void drive(ChassisVelocities velocity)
   {
-    drive.setFieldRelativeChassisVelocities(velocity);
+    drive.setFieldRelativeChassisSpeeds(velocity);
   }
 
   /**

@@ -1,8 +1,7 @@
 package frc.robot.Devices;
 
-import org.wpilib.wpilibj.DigitalInput;
-import org.wpilib.wpilibj.DutyCycleEncoder;
-import org.wpilib.wpilibj.Encoder;
+import org.wpilib.hardware.rotation.DutyCycleEncoder;
+import org.wpilib.hardware.rotation.Encoder;
 
 /*
  * Class: Modified Encoder
@@ -18,8 +17,7 @@ public class ModifiedEncoder {
     
 
     public ModifiedEncoder(int CANID) {
-        DigitalInput input = new DigitalInput(CANID);
-        dutyCycleEncoder = new DutyCycleEncoder(input);
+        dutyCycleEncoder = new DutyCycleEncoder(CANID);
     }
 
     public double get(){

@@ -1,19 +1,24 @@
 package frc.robot.Devices;
-import com.revrobotics.spark.*;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import java.util.Set;
 
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkLowLevel.ControlType;
+
+import org.wpilib.hardware.bus.CANPort;
+
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.PersistMode;
 
 import org.wpilib.math.filter.Debouncer.DebounceType;
-import org.wpilib.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.smartdashboard.*;
 
 /*
  * Class: NEOSparkMaxMotor
@@ -30,7 +35,7 @@ public class NeoSparkMaxMotor {
 
     public NeoSparkMaxMotor(int CANID) {
         System.out.println("NeoSparkMaxMotor. Initializing... CANID = " + CANID);
-        m_motor = new SparkMax(CANID, SparkLowLevel.MotorType.kBrushless);
+        m_motor = new SparkMax(CANPort.CAN_D0, CANID, MotorType.kBrushless);
         encoder = m_motor.getEncoder();
         closedLoopController = m_motor.getClosedLoopController();
 
@@ -47,7 +52,7 @@ public class NeoSparkMaxMotor {
 
     public NeoSparkMaxMotor(int CANID, boolean hasThroughbore) {
         System.out.println("NeoSparkMaxMotor. Initializing absolute... CANID = " + CANID);
-        m_motor = new SparkMax(CANID, SparkLowLevel.MotorType.kBrushless);
+        m_motor = new SparkMax(CANPort.CAN_D0, CANID, MotorType.kBrushless);
         absoluteEncoder = m_motor.getAbsoluteEncoder();
         encoder = m_motor.getEncoder();
         closedLoopController = m_motor.getClosedLoopController();
@@ -72,23 +77,23 @@ public class NeoSparkMaxMotor {
     }
 
     public void set(double power) {
-        m_motor.set(power);
+        m_motor.setThrottle(power);
     }
 
     public double getAppliedOutput() {
-        return m_motor.getAppliedOutput();
+        return m_motor.getAppliedOutput().get();
     }
 
     public void setRotationalSpeed(double velocity) {
-        closedLoopController.setReference(velocity, ControlType.kVelocity);
+        closedLoopController.setSetpoint(velocity, ControlType.kVelocity);
     }
 
     public double getSpeed() {
-        return encoder.getVelocity();
+        return encoder.getVelocity().get();
     }
 
     public double getPosition() {
-        return encoder.getPosition();
+        return encoder.getPosition().get();
     }
    
     public void setBrakeMode(boolean brake) {
@@ -99,12 +104,12 @@ public class NeoSparkMaxMotor {
 
     public double getAbsolutePosition() {
         if (absoluteEncoder != null) {
-            return absoluteEncoder.getPosition();
+            return absoluteEncoder.getPosition().get();
         }
         return 0;
     }
 
     public double getBusVoltage(){
-        return m_motor.getBusVoltage();
+        return m_motor.getBusVoltage().get();
     }
 }
