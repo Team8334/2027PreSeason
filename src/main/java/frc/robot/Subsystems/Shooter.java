@@ -10,9 +10,10 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
-import org.wpilib.wpilibj.DriverStation;
-import org.wpilib.wpilibj.DriverStation.Alliance;
-import org.wpilib.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.driverstation.*;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.smartdashboard.*;
 import frc.robot.Interfaces.Subsystem;
 import frc.robot.Data.PortMap;
 import frc.robot.Data.Constants;
@@ -106,9 +107,9 @@ public class Shooter implements Subsystem {
     }
 
     public Translation3d goalLocation() {
-        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        Alliance alliance = MatchState.getAlliance().orElse(Alliance.BLUE);
 
-        if (alliance == Alliance.Red) {
+        if (alliance == Alliance.RED) {
             return Constants.RED_HUB_LOCATION;
         }
 
