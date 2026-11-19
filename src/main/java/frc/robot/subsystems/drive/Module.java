@@ -25,7 +25,6 @@ public class Module {
   private final Alert driveDisconnectedAlert;
   private final Alert turnDisconnectedAlert;
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {}
-  private final Alert testAlert = new Alert();
 
   public Module(ModuleIO io, int index) {
     this.io = io;

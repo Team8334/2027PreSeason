@@ -6,30 +6,29 @@ import static org.wpilib.units.Units.Meter;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import org.wpilib.math.VecBuilder;
+import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.controller.PIDController;
-import frc.robot.ThirdParty.LimelightHelpers;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.ChassisAccelerations;
 import org.wpilib.math.kinematics.SwerveDriveKinematics;
 import org.wpilib.math.trajectory.Trajectory;
-import org.wpilib.wpilibj.DriverStation;
-import org.wpilib.wpilibj.Filesystem;
-import org.wpilib.wpilibj.Timer;
+import org.wpilib.driverstation.*;
+import org.wpilib.system.Filesystem;
+import org.wpilib.system.Timer;
 import frc.robot.Data.Constants;
 import frc.robot.Interfaces.Subsystem;
-import swervelib.SwerveController;
-import swervelib.SwerveDrive;
-import swervelib.math.SwerveMath;
-import swervelib.parser.SwerveDriveConfiguration;
-import swervelib.parser.SwerveParser;
-import swervelib.telemetry.SwerveDriveTelemetry;
-import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
-import org.wpilib.wpilibj.smartdashboard.*;
+import swervelib.commands3.SwerveParser;
+
+import yams.commands3.config.SwerveDriveConfig;
+import yams.commands3.swerve.SwerveDrive;
+import yams.commands3.swerve.SwerveInputStream;
+
+import yams.core.telemetry.SwerveDriveTelemetry;
+import yams.core.telemetry.SwerveDriveTelemetryConfig;
+import yams.core.telemetry.enums.TelemetryVerbosity;
+import org.wpilib.smartdashboard.*;
 
 //Class: Swerve Base
 //Description: Uses swerve base modules to move the robot, this is our drive base.
@@ -73,7 +72,8 @@ public class SwerveBase implements Subsystem {
                         Meter.of(4.035)),
                         Rotation2d.fromDegrees(180));
         // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary objects being created.
-        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.LOW;
+        SwerveDriveConfig config = new SwerveDriveConfig()
+            .withTelemetry(getName(), TelemetryVerbosity.LOW);
         try {
             swerveDrive = new SwerveParser(new File(Filesystem.getDeployDirectory(), "swerve"))
                     .createSwerveDrive(Constants.MAX_SPEED, startingPose);
@@ -148,20 +148,6 @@ public class SwerveBase implements Subsystem {
     // Inside the SwerveBase class
     private final PIDController aimPid = new PIDController(0.04, 0.0, 0.002);
   
-    //Custom drive method that uses Limelight to override rotation.
-    //This is the "last part" integrated into your existing drive logic.
-    public void driveAndAim(Translation2d translation, double manualRotation, boolean fieldRelative) {
-        double rotationOutput = manualRotation;
-
-        // Use your existing Limelight name
-        if (LimelightHelpers.getTV("limelight-front")) {
-            double tx = LimelightHelpers.getTX("limelight-front");
-            rotationOutput = aimPid.calculate(tx, 0);
-        }
-
-        // Pass the calculated rotation to your existing swerveDrive object
-        swerveDrive.drive(translation, rotationOutput, fieldRelative, false);
-    }
     
     // Function: getKinematics
     // Use: Gets geometry of the robot. Takes velocity of all four moters. Takes
@@ -489,64 +475,11 @@ public class SwerveBase implements Subsystem {
         swerveDrive.driveFieldOriented(velocity);
     }
 
-    public void LimelightOdometryUpdate() {
-        // 1. IMPORTANT: Reset the rejection flag at the start of every check
-        doRejectUpdate = false;
-    
-        // 2. Feed the gyro rotation to Limelight for MegaTag2
-        // We MUST use the raw gyro yaw, NOT the pose-estimated rotation!
-        // Using the pose rotation creates an endless feedback loop where vision affects pose, 
-        // which then affects vision again. MegaTag2 requires the gyro heading and rates.
-        LimelightHelpers.SetRobotOrientation("limelight-front", 
-            swerveDrive.getYaw().getDegrees(), 
-            swerveDrive.getGyro().getYawAngularVelocity().in(DegreesPerSecond), 
-            swerveDrive.getPitch().getDegrees(), 
-            0, 
-            swerveDrive.getRoll().getDegrees(), 
-            0);
-        
-        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
-    
-        // 3. Rejection Logic
-        // Ignore if we don't see tag
-        if (mt2 != null) {
-            if (mt2.tagCount == 0){
-                doRejectUpdate = true;
-            }
-        }else{
-            doRejectUpdate = true;
-        }
-                     
-        // Ignore if we are spinning too fast (prevents motion blur issues)
-        if (Math.abs(swerveDrive.getGyro().getYawAngularVelocity().in(DegreesPerSecond)) > 360) {
-            doRejectUpdate = true;
-        }
-
-        // 4. Apply the measurement if it passed the tests
-        if (!doRejectUpdate) {
-            // You can optionally add "Standard Deviations" here to tell the robot 
-            // how much to trust this specific vision frame.
-            // Lower numbers = More trust.
-            field.getObject("LimelightGhost").setPose(mt2.pose);
-
-            swerveDrive.addVisionMeasurement(
-                    mt2.pose,
-                    mt2.timestampSeconds,
-                    VecBuilder.fill(0.7, 0.7, 99999)); 
-        }
-    }
-
     @Override
     public void update() {
         // YAGSL internal odometry update (encoders + gyro)
         swerveDrive.updateOdometry();
         Pose2d estimatedPose = getPose();
-        // Limelight correction (vision)
-        try {
-            LimelightOdometryUpdate();
-        } catch (Exception e) {
-            DriverStation.reportError("Limelight Update Failed: " + e.getMessage(), true);
-        }
         field.setRobotPose(estimatedPose);
     }
 

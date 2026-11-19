@@ -10,7 +10,6 @@ package frc.robot.Subsystems.drive;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import org.wpilib.system.Notifier;
-import org.wpilib.system.RobotController;
 import org.wpilib.system.Timer;
 
 import java.util.ArrayList;

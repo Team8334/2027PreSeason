@@ -7,11 +7,12 @@ import frc.robot.Data.Constants;
 import frc.robot.Data.PortMap;
 import frc.robot.Devices.ModifiedEncoder;
 
-import org.wpilib.math.MathUtil;
+import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.controller.ArmFeedforward;
 import org.wpilib.math.controller.ProfiledPIDController;
 import org.wpilib.math.trajectory.TrapezoidProfile;
-import org.wpilib.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.smartdashboard.*;
+import org.wpilib.telemetry.Telemetry;
 
 /*
  * Class: Intake Mechanism
@@ -112,7 +113,7 @@ public class IntakeMechanism implements Subsystem {
         double modifiedManualPosition = Constants.INTAKE_DOWN_POSITION + (normalizedInput * (Constants.INTAKE_UP_POSITION - Constants.INTAKE_DOWN_POSITION));
 
         // MathUtil.clamp prevents it from exceeding your upper and lower limits
-        this.manualPosition = MathUtil.clamp(modifiedManualPosition, Math.min(Constants.INTAKE_DOWN_POSITION, Constants.INTAKE_UP_POSITION), Math.max(Constants.INTAKE_DOWN_POSITION, Constants.INTAKE_UP_POSITION));
+        this.manualPosition = Math.clamp(modifiedManualPosition, Math.min(Constants.INTAKE_DOWN_POSITION, Constants.INTAKE_UP_POSITION), Math.max(Constants.INTAKE_DOWN_POSITION, Constants.INTAKE_UP_POSITION));
     }
 
     public void update() {
@@ -174,15 +175,15 @@ public class IntakeMechanism implements Subsystem {
     }
 
     public void log() {
-        SmartDashboard.putNumber("Intake/Pivot Position", currentPosition);
-        SmartDashboard.putNumber("Intake/Pivot Goal", goal);
-        SmartDashboard.putNumber("Intake/Arm Applied Output", armMotor.getAppliedOutput());
-        SmartDashboard.putNumber("Intake/Arm Speed", armMotor.getSpeed());
-        SmartDashboard.putNumber("Intake/Wheels Applied Output", wheelsMotor.getAppliedOutput());
-        SmartDashboard.putString("Intake/State", state);
-        SmartDashboard.putNumber("Intake/Setpoint Position", pivotProfiledPIDController.getSetpoint().position);
-        SmartDashboard.putNumber("Intake/Setpoint Velocity", pivotProfiledPIDController.getSetpoint().velocity);
-        SmartDashboard.putNumber("Intake/Arm Voltage", armVoltage);
+        Telemetry.log("Intake/Pivot Position", currentPosition);
+        Telemetry.log("Intake/Pivot Goal", goal);
+        Telemetry.log("Intake/Arm Applied Output", armMotor.getAppliedOutput());
+        Telemetry.log("Intake/Arm Speed", armMotor.getSpeed());
+        Telemetry.log("Intake/Wheels Applied Output", wheelsMotor.getAppliedOutput());
+        Telemetry.log("Intake/State", state);
+        Telemetry.log("Intake/Setpoint Position", pivotProfiledPIDController.getSetpoint().position);
+        Telemetry.log("Intake/Setpoint Velocity", pivotProfiledPIDController.getSetpoint().velocity);
+        Telemetry.log("Intake/Arm Voltage", armVoltage);
     }
 
     public boolean isEnabled() {
