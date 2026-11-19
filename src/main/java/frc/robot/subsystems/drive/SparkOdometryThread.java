@@ -11,6 +11,8 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import org.wpilib.system.Notifier;
 import org.wpilib.system.RobotController;
+import org.wpilib.system.Timer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -103,7 +105,7 @@ public class SparkOdometryThread {
     Drive.odometryLock.lock();
     try {
       // Get sample timestamp
-      double timestamp = RobotController.getFPGATime() / 1e6;
+      double timestamp = Timer.getTimestamp() / 1e6;
 
       // Read Spark values, mark invalid in case of error
       double[] sparkValues = new double[sparkSignals.size()];
