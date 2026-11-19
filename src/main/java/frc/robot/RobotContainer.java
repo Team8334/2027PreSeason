@@ -10,8 +10,6 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.driverstation.GenericHID;
-import org.wpilib.driverstation.XboxController;
 import org.wpilib.command3.Command;
 import org.wpilib.command3.button.CommandXboxController;
 import org.wpilib.sysid.*;
@@ -125,21 +123,33 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.kZero));
+                () -> Rotation2d.ZERO));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller
+        .x()
+        .onTrue(
+            drive.run(
+                    coroutine -> {
+                      drive.stopWithX();
+                      coroutine.park();
+                    })
+                .named("Stop With X"));
 
     // Reset gyro to 0(degrees) when B button is pressed
     controller
         .b()
         .onTrue(
-            Commands.runOnce(
-                    () ->
+            drive.run(
+                    coroutine ->
                         drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                    drive)
-                .ignoringDisable(true));
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.ZERO)))
+                .named("Reset Drive Heading"));
+  }
+
+  /** Update mechanism telemetry and odometry outside the Commands v3 scheduler. */
+  public void periodic() {
+    drive.periodic();
   }
 
   /**

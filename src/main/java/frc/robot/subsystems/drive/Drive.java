@@ -38,6 +38,8 @@ import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
@@ -46,7 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
+public class Drive implements Mechanism {
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -118,7 +120,6 @@ public class Drive extends SubsystemBase {
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
 
-  @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -184,7 +185,7 @@ public class Drive extends SubsystemBase {
    */
   public void runVelocity(ChassisVelocities speeds) {
     // Calculate module setpoints
-    ChassisVelocities discreteSpeeds = ChassisVelocities.discretize(speeds, 0.02);
+    ChassisVelocities discreteSpeeds = speeds.discretize(0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, maxSpeedMetersPerSec);
 
@@ -228,14 +229,20 @@ public class Drive extends SubsystemBase {
 
   /** Returns a command to run a quasistatic test in the specified direction. */
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0))
-        .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
+    return runRepeatedly(() -> runCharacterization(0.0))
+        .named("Drive SysId Zero Output")
+        .withTimeout(Seconds.of(1.0))
+        .andThen(sysId.quasistatic(direction))
+        .named("Drive SysId Quasistatic " + direction);
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+    return runRepeatedly(() -> runCharacterization(0.0))
+        .named("Drive SysId Zero Output")
+        .withTimeout(Seconds.of(1.0))
+        .andThen(sysId.dynamic(direction))
+        .named("Drive SysId Dynamic " + direction);
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
