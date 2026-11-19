@@ -7,7 +7,6 @@
 
 package frc.robot.Subsystems.drive;
 
-import org.wpilib.math.util.MathUtil;
 
 import static frc.robot.Subsystems.drive.DriveConstants.*;
 
