@@ -11,6 +11,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.command3.Command;
+import org.wpilib.sysid.SysIdRoutineLog;
 import org.wpilib.command3.button.CommandXboxController;
 import org.wpilib.sysid.*;
 

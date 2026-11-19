@@ -24,18 +24,14 @@ public class Module {
 
   private final Alert driveDisconnectedAlert;
   private final Alert turnDisconnectedAlert;
-  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
+  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {}
+  private final Alert testAlert = new Alert();
 
   public Module(ModuleIO io, int index) {
     this.io = io;
     this.index = index;
-    driveDisconnectedAlert =
-        new Alert(
-            "Disconnected drive motor on module " + Integer.toString(index) + ".",
-            Level.HIGH);
-    turnDisconnectedAlert =
-        new Alert(
-            "Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
+    driveDisconnectedAlert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", Level.HIGH); 
+    turnDisconnectedAlert = new Alert( "Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
   }
 
   public void periodic() {
