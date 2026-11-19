@@ -1,10 +1,8 @@
 package frc.robot.Devices;
 
-import java.util.Set;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -16,9 +14,6 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.PersistMode;
-
-import org.wpilib.math.filter.Debouncer.DebounceType;
-import org.wpilib.smartdashboard.*;
 
 /*
  * Class: NEOSparkMaxMotor
