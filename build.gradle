@@ -4,6 +4,12 @@ plugins {
     id "org.wpilib.GradleRIO" version "2027.0.0-alpha-7"
 }
 
+repositories {
+    maven {
+        url = uri("$rootDir/vendordeps/PathplannerLibCommandsV3")
+    }
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
@@ -61,6 +67,7 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
+    implementation "com.pathplanner.lib:PathplannerLib-java:0.0.0"
 
     systemcoreDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
     systemcoreDebug wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
