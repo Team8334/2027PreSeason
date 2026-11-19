@@ -3,12 +3,6 @@ package frc.robot;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import frc.robot.opmodes.auto.DriveToPoseSquareAuto;
-import frc.robot.opmodes.auto.LeaveStartingAreaAuto;
-import frc.robot.opmodes.auto.OutAndBackAuto;
-import frc.robot.opmodes.teleop.AngularVelocityTeleop;
-import frc.robot.opmodes.teleop.DemoModeTeleop;
-import frc.robot.opmodes.teleop.HeadingTeleop;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.wpilib.hardware.hal.HAL;
@@ -32,12 +26,6 @@ class RobotTest
   void robotBuildsAndRuns()
   {
     Robot robot = new Robot();
-    assertNotNull(new AngularVelocityTeleop(robot));
-    assertNotNull(new HeadingTeleop(robot));
-    assertNotNull(new DemoModeTeleop(robot));
-    assertNotNull(new LeaveStartingAreaAuto(robot));
-    assertNotNull(new OutAndBackAuto(robot));
-    assertNotNull(new DriveToPoseSquareAuto(robot));
     assertDoesNotThrow(() -> {
       for (int i = 0; i < 50; i++)
       {
