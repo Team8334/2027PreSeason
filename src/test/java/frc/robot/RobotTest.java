@@ -24,14 +24,16 @@ class RobotTest
   @Test
   void robotBuildsAndRuns()
   {
-    Robot robot = new Robot();
-    assertDoesNotThrow(() -> {
-      for (int i = 0; i < 50; i++)
-      {
-        robot.robotPeriodic();
-        robot.simulationPeriodic();
-        SimHooks.stepTiming(0.02);
-      }
-    });
+    try (Robot robot = new Robot())
+    {
+      assertDoesNotThrow(() -> {
+        for (int i = 0; i < 50; i++)
+        {
+          robot.robotPeriodic();
+          robot.simulationPeriodic();
+          SimHooks.stepTiming(0.02);
+        }
+      });
+    }
   }
 }
