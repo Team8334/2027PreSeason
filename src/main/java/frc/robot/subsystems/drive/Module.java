@@ -9,7 +9,7 @@ package frc.robot.Subsystems.drive;
 
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.SwerveModulePosition;
-import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.kinematics.SwerveModuleVelocity;
 import org.wpilib.util.Alert;
 import org.wpilib.util.Alert.Level;
 
@@ -29,8 +29,10 @@ public class Module {
   public Module(ModuleIO io, int index) {
     this.io = io;
     this.index = index;
-    driveDisconnectedAlert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", Level.HIGH);
-    turnDisconnectedAlert = new Alert("Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
+    driveDisconnectedAlert =
+        new Alert("Swerve", "Disconnected drive motor on module " + Integer.toString(index) + ".", Level.HIGH);
+    turnDisconnectedAlert =
+        new Alert("Swerve", "Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
   }
 
   public void periodic() {
@@ -52,10 +54,10 @@ public class Module {
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
-  public void runSetpoint(SwerveModuleState state) {
-    // Optimize velocity setpoint
-    state.optimize(getAngle());
-    state.cosineScale(inputs.turnPosition);
+  public void runSetpoint(SwerveModuleVelocity state) {
+    // Optimize velocity setpoint and scale for steering angle
+    state = state.optimize(getAngle());
+    state = state.cosineScale(inputs.turnPosition);
 
     // Apply setpoints
     io.setDriveVelocity(state.velocity / wheelRadiusMeters);
@@ -65,7 +67,7 @@ public class Module {
   /** Runs the module with the specified output while controlling to zero degrees. */
   public void runCharacterization(double output) {
     io.setDriveOpenLoop(output);
-    io.setTurnPosition(Rotation2d.kZero);
+    io.setTurnPosition(Rotation2d.ZERO);
   }
 
   /** Disables all outputs to motors. */
@@ -95,8 +97,8 @@ public class Module {
   }
 
   /** Returns the module state (turn angle and drive velocity). */
-  public SwerveModuleState getState() {
-    return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
+  public SwerveModuleVelocity getState() {
+    return new SwerveModuleVelocity(getVelocityMetersPerSec(), getAngle());
   }
 
   /** Returns the module positions received this cycle. */

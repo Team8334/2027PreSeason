@@ -14,10 +14,14 @@ import org.wpilib.driverstation.*;
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.smartdashboard.*;
+import org.wpilib.telemetry.Telemetry;
+
 import frc.robot.Interfaces.Subsystem;
 import frc.robot.Data.PortMap;
 import frc.robot.Data.Constants;
 import frc.robot.Devices.NeoSparkMaxMotor;
+import org.wpilib.tunable.Tunables;
+import org.wpilib.tunable.TunableDouble;
 
 /*
  * Class: Shooter
@@ -53,6 +57,9 @@ public class Shooter implements Subsystem {
     // Interpolation tables mapping distance (meters) to RPM
     private final InterpolatingDoubleTreeMap leftRpmTable = new InterpolatingDoubleTreeMap();
     private final InterpolatingDoubleTreeMap rightRpmTable = new InterpolatingDoubleTreeMap();
+
+    private final TunableDouble manualRPMSetpoint =
+        Tunables.addDouble("Shooter/Manual RPM Setpoint", 3000.0);
 
     public static Shooter getInstance() {
         if (instance == null) {
@@ -129,7 +136,8 @@ public class Shooter implements Subsystem {
         double possibilityDeterminator = normalDistanceToHub * Math.tan(Constants.FIRING_ANGLE) - Constants.HEIGHT_DIFFERENCE;
 
         // Simplified angle calculation using WPILib's built in getAngle()
-        Rotation2d shootingAngle = distanceToHub.getAngle();
+        Rotation2d shootingAngle = distanceToHub.getAngle()
+                    .orElse(Rotation2d.ZERO);
 
         // Get RPM from interpolation tables based on distance
         double rpmLeft = leftRpmTable.get(normalDistanceToHub);
@@ -189,7 +197,7 @@ public class Shooter implements Subsystem {
 
     public void manualFire(double triggerValue){
         state = "manualFire";
-        double manualTarget = SmartDashboard.getNumber("Shooter/Manual RPM Setpoint", 3000.0);
+        double manualTarget =  manualRPMSetpoint.get();
 
         //double manualTarget = triggerValue * 5676.0; // Math based on how far trigger is pressed down
         setTargetRPM(manualTarget, manualTarget);
@@ -271,19 +279,19 @@ public class Shooter implements Subsystem {
     }
 
     public void initialize() {
-        SmartDashboard.setDefaultNumber("Shooter/Manual RPM Setpoint", 3000.0);
+        double targetRPM = manualRPMSetpoint.get();
     }
 
     public void log() {
-        SmartDashboard.putNumber("Shooter/Shooter Left Motor Speed", shooterMotorLeft.getSpeed());
-        SmartDashboard.putNumber("Shooter/Shooter Right Motor Speed", shooterMotorRight.getSpeed());
-        SmartDashboard.putNumber("Shooter/Shooter Target RPM Left", targetRpmLeft);
-        SmartDashboard.putNumber("Shooter/Shooter Target RPM Right", targetRpmRight);
-        SmartDashboard.putNumber("Shooter/Kicker Motor Speed", kickerMotor.getSpeed());
-        SmartDashboard.putString("Shooter/Shooter State", state);
-        SmartDashboard.putBoolean("Shooter/Shooter At Target Speed", isAtCorrectSpeed());
-        SmartDashboard.putNumber("Shooter/distance to Shooter", normalDistanceToHub);
-        SmartDashboard.putNumber("Shooter/Left Motor voltage calc", leftShooterVoltageCalc);
+        Telemetry.log("Shooter/Shooter Left Motor Speed", shooterMotorLeft.getSpeed());
+        Telemetry.log("Shooter/Shooter Right Motor Speed", shooterMotorRight.getSpeed());
+        Telemetry.log("Shooter/Shooter Target RPM Left", targetRpmLeft);
+        Telemetry.log("Shooter/Shooter Target RPM Right", targetRpmRight);
+        Telemetry.log("Shooter/Kicker Motor Speed", kickerMotor.getSpeed());
+        Telemetry.log("Shooter/Shooter State", state);
+        Telemetry.log("Shooter/Shooter At Target Speed", isAtCorrectSpeed());
+        Telemetry.log("Shooter/distance to Shooter", normalDistanceToHub);
+        Telemetry.log("Shooter/Left Motor voltage calc", leftShooterVoltageCalc);
     }
 
     public boolean isEnabled() {
