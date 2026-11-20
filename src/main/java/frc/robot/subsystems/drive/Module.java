@@ -9,7 +9,7 @@ package frc.robot.Subsystems.drive;
 
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.SwerveModulePosition;
-import org.wpilib.math.kinematics.SwerveModuleVelocity;
+import org.wpilib.math.kinematics.SwerveModuleState;
 import org.wpilib.util.Alert;
 import org.wpilib.util.Alert.Level;
 
@@ -24,13 +24,13 @@ public class Module {
 
   private final Alert driveDisconnectedAlert;
   private final Alert turnDisconnectedAlert;
-  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {}
+  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[0];
 
   public Module(ModuleIO io, int index) {
     this.io = io;
     this.index = index;
-    driveDisconnectedAlert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", Level.HIGH); 
-    turnDisconnectedAlert = new Alert( "Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
+    driveDisconnectedAlert = new Alert("Disconnected drive motor on module " + Integer.toString(index) + ".", Level.HIGH);
+    turnDisconnectedAlert = new Alert("Disconnected turn motor on module " + Integer.toString(index) + ".", Level.HIGH);
   }
 
   public void periodic() {
@@ -52,7 +52,7 @@ public class Module {
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
-  public void runSetpoint(SwerveModulestate) {
+  public void runSetpoint(SwerveModuleState state) {
     // Optimize velocity setpoint
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);

@@ -16,13 +16,14 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.CANBus;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkFlex;
@@ -32,6 +33,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import org.wpilib.math.util.MathUtil;
+import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.units.measure.Angle;
@@ -51,6 +53,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
   private final CANcoder turnEncoder;
+  private final CANBus canBus = new CANBus();
   private final StatusSignal<Angle> turnPositionSignal;
   private final StatusSignal<AngularVelocity> turnVelocitySignal;
 
@@ -68,9 +71,9 @@ public class ModuleIOSpark implements ModuleIO {
 
   // Connection debouncers
   private final Debouncer driveConnectedDebounce =
-      new Debouncer(0.5, Debouncer.DebounceType.kFalling);
+      new Debouncer(0.5, Debouncer.DebounceType.FALLING);
   private final Debouncer turnConnectedDebounce =
-      new Debouncer(0.5, Debouncer.DebounceType.kFalling);
+      new Debouncer(0.5, Debouncer.DebounceType.FALLING);
 
   public ModuleIOSpark(int module) {
     zeroRotation =
@@ -79,10 +82,10 @@ public class ModuleIOSpark implements ModuleIO {
           case 1 -> frontRightZeroRotation;
           case 2 -> backLeftZeroRotation;
           case 3 -> backRightZeroRotation;
-          default -> Rotation2d.kZero;
+          default -> Rotation2d.ZERO;
         };
     driveSpark =
-        new SparkFlex(
+        new SparkFlex(CANPort.CAN_D0,
             switch (module) {
               case 0 -> frontLeftDriveCanId;
               case 1 -> frontRightDriveCanId;
@@ -92,7 +95,7 @@ public class ModuleIOSpark implements ModuleIO {
             },
             MotorType.kBrushless);
     turnSpark =
-        new SparkMax(
+        new SparkMax(CANPort.CAN_D0,
             switch (module) {
               case 0 -> frontLeftTurnCanId;
               case 1 -> frontRightTurnCanId;
@@ -110,7 +113,8 @@ public class ModuleIOSpark implements ModuleIO {
               case 2 -> backLeftTurnCancoderId;
               case 3 -> backRightTurnCancoderId;
               default -> 0;
-            });
+            },
+            canBus);
     turnPositionSignal = turnEncoder.getPosition();
     turnVelocitySignal = turnEncoder.getVelocity();
 
@@ -126,10 +130,7 @@ public class ModuleIOSpark implements ModuleIO {
         .voltageCompensation(12.0);
     driveConfig
         .encoder
-        .positionConversionFactor(driveEncoderPositionFactor)
-        .velocityConversionFactor(driveEncoderVelocityFactor)
-        .uvwMeasurementPeriod(10)
-        .uvwAverageDepth(2);
+        .countsPerRevolution(42);
     driveConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -158,12 +159,6 @@ public class ModuleIOSpark implements ModuleIO {
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(turnMotorCurrentLimit)
         .voltageCompensation(12.0);
-    turnConfig
-        .encoder
-        .positionConversionFactor(turnMotorPositionFactor)
-        .velocityConversionFactor(turnMotorVelocityFactor)
-        .uvwMeasurementPeriod(10)
-        .uvwAverageDepth(2);
     turnConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -205,7 +200,10 @@ public class ModuleIOSpark implements ModuleIO {
     // Create odometry queues
     timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
     drivePositionQueue =
-        SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
+        SparkOdometryThread.getInstance()
+            .registerSignal(
+                driveSpark,
+                () -> driveEncoder.getPosition().get() * driveEncoderPositionFactor);
     var turnPositionClone = turnPositionSignal.clone(); // Status signals are not thread-safe
     turnPositionQueue =
         SparkOdometryThread.getInstance()
@@ -222,7 +220,7 @@ public class ModuleIOSpark implements ModuleIO {
                 - zeroRotation.getRadians(),
             turnPIDMinInput,
             turnPIDMaxInput);
-    tryUntilOk(turnSpark, 5, () -> turnSpark.getEncoder().setPosition(moduleRad));
+    tryUntilOk(turnSpark, 5, () -> turnSpark.getEncoder().setPosition(moduleRad / turnMotorPositionFactor));
     turnEncoderSeeded = true;
   }
 
@@ -230,13 +228,20 @@ public class ModuleIOSpark implements ModuleIO {
   public void updateInputs(ModuleIOInputs inputs) {
     // Update drive inputs
     sparkStickyFault = false;
-    ifOk(driveSpark, driveEncoder::getPosition, (value) -> inputs.drivePositionRad = value);
-    ifOk(driveSpark, driveEncoder::getVelocity, (value) -> inputs.driveVelocityRadPerSec = value);
+    ifOk(driveSpark, () -> driveEncoder.getPosition().get(),
+        (value) -> inputs.drivePositionRad = value * driveEncoderPositionFactor);
+    ifOk(driveSpark, () -> driveEncoder.getVelocity().get(),
+        (value) -> inputs.driveVelocityRadPerSec = value * driveEncoderVelocityFactor);
     ifOk(
         driveSpark,
-        new DoubleSupplier[] {driveSpark::getAppliedOutput, driveSpark::getBusVoltage},
+        new DoubleSupplier[] {
+          () -> driveSpark.getAppliedOutput().get(), () -> driveSpark.getBusVoltage().get()
+        },
         (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
-    ifOk(driveSpark, driveSpark::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
+    ifOk(
+        driveSpark,
+        () -> driveSpark.getOutputCurrent().get(),
+        (value) -> inputs.driveCurrentAmps = value);
     inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
 
     // Update turn inputs
@@ -259,9 +264,12 @@ public class ModuleIOSpark implements ModuleIO {
     }
     ifOk(
         turnSpark,
-        new DoubleSupplier[] {turnSpark::getAppliedOutput, turnSpark::getBusVoltage},
+        new DoubleSupplier[] {() -> turnSpark.getAppliedOutput().get(), () -> turnSpark.getBusVoltage().get()},
         (values) -> inputs.turnAppliedVolts = values[0] * values[1]);
-    ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
+    ifOk(
+        turnSpark,
+        () -> turnSpark.getOutputCurrent().get(),
+        (value) -> inputs.turnCurrentAmps = value);
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
     // Update odometry inputs
@@ -271,7 +279,7 @@ public class ModuleIOSpark implements ModuleIO {
         drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryTurnPositions =
         turnPositionQueue.stream()
-            .map((Double value) -> new Rotation2d(value).minus(zeroRotation))
+            .map((Double value) -> Rotation2d.fromRadians(value).minus(zeroRotation))
             .toArray(Rotation2d[]::new);
     timestampQueue.clear();
     drivePositionQueue.clear();
@@ -303,6 +311,6 @@ public class ModuleIOSpark implements ModuleIO {
   public void setTurnPosition(Rotation2d rotation) {
     double setpoint =
         MathUtil.inputModulus(rotation.getRadians(), turnPIDMinInput, turnPIDMaxInput);
-    turnController.setSetpoint(setpoint, ControlType.kPosition);
+    turnController.setSetpoint(setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 }

@@ -2,7 +2,6 @@ package frc.robot.Subsystems.intake;
 
 import frc.robot.Interfaces.Subsystem;
 import frc.robot.Subsystems.SubsystemManager;
-import frc.robot.Devices.NeoSparkMaxMotor;
 import frc.robot.Data.Constants;
 import frc.robot.Data.PortMap;
 import frc.robot.Devices.ModifiedEncoder;
@@ -11,7 +10,6 @@ import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.controller.ArmFeedforward;
 import org.wpilib.math.controller.ProfiledPIDController;
 import org.wpilib.math.trajectory.TrapezoidProfile;
-import org.wpilib.smartdashboard.*;
 import org.wpilib.telemetry.Telemetry;
 
 /*
