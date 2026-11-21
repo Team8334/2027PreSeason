@@ -1,6 +1,5 @@
 package frc.robot.Subsystems;
 
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import org.wpilib.math.controller.PIDController;
@@ -10,10 +9,8 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
-import org.wpilib.driverstation.*;
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.Alliance;
-import org.wpilib.smartdashboard.*;
 import org.wpilib.telemetry.Telemetry;
 
 import frc.robot.Interfaces.Subsystem;
